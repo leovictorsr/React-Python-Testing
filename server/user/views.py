@@ -4,7 +4,7 @@ from django.middleware import csrf
 from rest_framework import exceptions as rest_exceptions, response, decorators as rest_decorators, permissions as rest_permissions
 from rest_framework_simplejwt import tokens, views as jwt_views, serializers as jwt_serializers, exceptions as jwt_exceptions
 from user import serializers, models
-
+import requests
 
 def get_user_tokens(user):
     refresh = tokens.RefreshToken.for_user(user)
@@ -28,6 +28,7 @@ def loginView(request):
     if user is not None:
         tokens = get_user_tokens(user)
         res = response.Response()
+
         res.set_cookie(
             key=settings.SIMPLE_JWT['AUTH_COOKIE'],
             value=tokens["access_token"],
@@ -127,4 +128,24 @@ def user(request):
         return response.Response(status_code=404)
 
     serializer = serializers.UserSerializer(user)
-    return response.Response(serializer.data)
+    
+    etherscan_api_key = '48TTBF9T55VMRJFSZG83CKDDQU6YNA5Y9P'
+    address = serializer.data['wallet_address']
+    url = f'https://api.etherscan.io/api?module=account&action=balance&address={address}&tag=latest&apikey={etherscan_api_key}'
+    
+    wres = requests.get(url)
+    data = wres.json()
+    
+    if data.get('status') == '1':
+        # Get balance in Wei
+        balance_wei = int(data.get('result', 0))
+        # Convert balance to Ether
+        balance_eth = balance_wei / 1e18
+    else:
+        balance_eth = 0.0
+
+    # Add balance to the serialized data
+    serialized_data = serializer.data
+    serialized_data["balance_eth"] = balance_eth
+
+    return response.Response(serialized_data)
