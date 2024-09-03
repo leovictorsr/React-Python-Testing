@@ -15,7 +15,11 @@ export default function Home() {
             <h2>
                 <div className='row'>
                     <div className="mb-12">
-                        {user?.email !== undefined ? 'List user Ethereum balance' : 'Please login first'}
+                        {user?.email !== undefined ?
+                            <div>{user.wallet_address}: {user.balance_eth}</div>
+                            :
+                            <div>Please login first</div>
+                        }
                     </div>
                 </div>
             </h2>

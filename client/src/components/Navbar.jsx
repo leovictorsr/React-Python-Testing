@@ -22,7 +22,7 @@ export default function Navbar() {
         <div className="collapse navbar-collapse" id="navbarSupportedContent" style={{justifyContent: "space-between"}}>
           <div style={{height: "40px"}}>
             <NavLink className={'nav-link'} to={'/'} style={{height: "100%", display: "flex", columnGap: "10px", alignItems: "center"}}>
-              <img alt='logo' style={{height: "100%"}} src='logo.png' />
+              <img alt='logo' style={{height: "100%"}} src='/logo.png' />
             </NavLink>
           </div>
           <ul className='navbar-nav mb-2 mb-lg-0'>
