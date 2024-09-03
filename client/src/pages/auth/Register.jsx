@@ -1,13 +1,19 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Toast from 'react-bootstrap/Toast';
+
 import { axiosInstance } from '../../api/apiConfig'
 
 export default function Register() {
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
+    const [show, setShow] = useState(false)
+    const [error, setError] = useState({})
+
     const first_name = useRef()
     const last_name = useRef()
     const email = useRef()
+    const wallet_address = useRef()
     const password = useRef()
     const password2 = useRef(undefined)
 
@@ -18,25 +24,28 @@ export default function Register() {
             first_name: first_name.current.value,
             last_name: last_name.current.value,
             email: email.current.value,
+            wallet_address: wallet_address.current.value,
             password: password.current.value,
             password2: password2.current.value
-          };
+        };
 
         setLoading(true)
 
         try {
-            const response = await axiosInstance.post('auth/register', JSON.stringify(data))
+            await axiosInstance.post('auth/register', JSON.stringify(data))
 
             setLoading(false)
 
             navigate('/auth/login')
         } catch (error) {
+            setError(error?.response?.data)
+            setShow(true)
             setLoading(false)
-            // TODO: handle errors
         }
     }
 
     return (
+        <>
         <div className='container'>
             <h2>Register</h2>
             <form onSubmit={onSubmitForm}>
@@ -50,6 +59,9 @@ export default function Register() {
                     <input type="email" placeholder='Email' autoComplete='off' className='form-control' id="email" ref={email} />
                 </div>
                 <div className="mb-3">
+                    <input type="text" placeholder='Wallet Address' autoComplete='off' className='form-control' id="wallet" ref={wallet_address} />
+                </div>
+                <div className="mb-3">
                     <input type="password" placeholder='Password' autoComplete='off' className='form-control' id="password" ref={password} />
                 </div>
                 <div className="mb-3">
@@ -60,5 +72,23 @@ export default function Register() {
                 </div>
             </form>
         </div>
+        <Toast className="position-fixed top-0 end-0 m-3" onClose={() => setShow(false)} show={show} delay={3000} autohide>
+            <Toast.Header>
+                <img
+                    src="holder.js/20x20?text=%20"
+                    className="rounded me-2"
+                    alt=""
+                />
+            <strong className="me-auto">Message</strong>
+            </Toast.Header>
+            <Toast.Body>
+                {Object.entries(error)?.map(([key, value]) => (
+                    <div key={key}>
+                        {key?.replace(/_/g, ' ')?.replace(/\b\w/g, char => char.toUpperCase())} {value?.toString()?.replace(/^This field\s+/, '')}
+                    </div>
+                ))}
+            </Toast.Body>
+        </Toast>
+        </>
     )
 }
